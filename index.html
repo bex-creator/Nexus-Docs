@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bex-Creator Master Code Locker</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        h1 { color: #38bdf8; }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #334155;
+            background-color: #1e293b;
+            color: #10b981;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        button {
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background-color: #0284c7; }
+        .container {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Master Code Locker (Nexus & Chat)</h1>
+        <p>Paste your HTML/JS below. The generated code will work on BOTH <strong>bex-creator.github.io/Nexus-store/</strong> and <strong>bex-creator.github.io/chat/</strong>.</p>
+        
+        <label for="inputCode"><strong>Original Source Code:</strong></label>
+        <textarea id="inputCode" placeholder="Paste your full HTML code here..."></textarea>
+        
+        <button onclick="protectCode()">Lock & Generate Code</button>
+        
+        <br><br>
+        
+        <label for="outputCode"><strong>Domain-Locked Code (Publish this):</strong></label>
+        <textarea id="outputCode" readonly placeholder="Locked output will appear here..."></textarea>
+    </div>
+
+    <script>
+        function protectCode() {
+            const input = document.getElementById('inputCode').value;
+            
+            if (!input.trim()) {
+                alert("Please paste some code first!");
+                return;
+            }
+
+            // Encode the user's HTML
+            const encodedPayload = btoa(unescape(encodeURIComponent(input)));
+
+            const finalCode = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Secured Content</title>
+</head>
+<body>
+    <div id="security-viewport-trigger" style="height: 1px; width: 1px;"></div>
+    <script>
+        // 1. Lazy Initialization
+        class SecurityContext {
+            get isAuthorized() {
+                let mathHash = 0;
+                for(let i = 0; i < 500; i++) { mathHash += (Math.sqrt(i) * 2.5); }
+                
+                // Convert current URL to lowercase to prevent capitalization errors
+                const currentHref = window.location.href.toLowerCase();
+                
+                // Check against BOTH domains and local testing environments
+                const isValid = currentHref.includes("bex-creator.github.io/nexus-store") || 
+                                currentHref.includes("bex-creator.github.io/chat") || 
+                                currentHref.includes("127.0.0.1") || 
+                                currentHref.includes("localhost");
+                
+                Object.defineProperty(this, 'isAuthorized', {
+                    value: isValid,
+                    writable: false,
+                    configurable: false
+                });
+                
+                return isValid;
+            }
+        }
+
+        // 2. Lazy Evaluation
+        function* payloadGenerator(encodedString) {
+            let a = 0, b = 1;
+            const data = decodeURIComponent(escape(atob(encodedString)));
+            
+            for (let i = 0; i < data.length; i += 50) {
+                let temp = a + b; a = b; b = temp; 
+                yield data.slice(i, i + 50);
+            }
+        }
+
+        // 3. Lazy Loading & Alert Beacon
+        document.addEventListener("DOMContentLoaded", () => {
+            const auth = new SecurityContext();
+            const trigger = document.getElementById('security-viewport-trigger');
+            
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        obs.disconnect(); 
+                        
+                        if (auth.isAuthorized) {
+                            const gen = payloadGenerator("${encodedPayload}");
+                            let htmlContent = "";
+                            let chunk = gen.next();
+                            
+                            while (!chunk.done) {
+                                htmlContent += chunk.value;
+                                chunk = gen.next();
+                            }
+                            
+                            document.open();
+                            document.write(htmlContent);
+                            document.close();
+                        } else {
+                            document.body.innerHTML = "<h2 style='color:red;font-family:sans-serif;text-align:center;margin-top:20vh;'>Unauthorized Host: Content locked to Bex-Creator domains.</h2>";
+                            
+                            // Gather safe browser and hardware telemetry
+                            const stolenUrl = window.location.href;
+                            const userAgent = navigator.userAgent;
+                            const referrer = document.referrer || "Direct/None";
+                            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                            const screenRes = \`\${window.screen.width}x\${window.screen.height}\`;
+                            const viewport = \`\${window.innerWidth}x\${window.innerHeight}\`;
+                            const language = navigator.language;
+                            const cores = navigator.hardwareConcurrency || "Unknown";
+                            const ram = navigator.deviceMemory || "Unknown";
+                            
+                            const webhookUrl = "https://discord.com/api/webhooks/1552812297179898079/E83EusP_gEfAqjlQ1q5gH8oMLZvg4gelKm2CdWpBRKRD1pz7QiU-XOQ-dkoTc2Z1UhEV"; 
+                            
+                            fetch(webhookUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    content: \`🚨 **Security Alert:** Protected code executed on an unauthorized domain!\\n\\n**Location:** \${stolenUrl}\\n**Referrer:** \${referrer}\\n**Time Zone:** \${timeZone}\\n**Language:** \${language}\\n**Monitor:** \${screenRes} (Viewport: \${viewport})\\n**Hardware:** ~\${ram}GB RAM | \${cores} CPU Cores\\n**User-Agent:** \\\`\${userAgent}\\\`\`
+                                })
+                            }).catch(e => {});
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(trigger);
+        });
+    <\/script>
+</body>
+</html>`;
+
+            document.getElementById('outputCode').value = finalCode;
+        }
+    </script>
+</body>
+</html>
